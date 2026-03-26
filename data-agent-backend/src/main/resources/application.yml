@@ -1,0 +1,23 @@
+server:
+  port: 9933
+spring:
+  application:
+    name: data-agent
+  profiles:
+    active: private
+  datasource:
+    url: jdbc:postgresql://localhost:5432/data_agent
+    username:
+    password:
+    driver-class-name: org.postgresql.Driver
+jimmer:
+  dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
+  show-sql: true
+  pretty-sql: true
+  language: kotlin
+  client:
+    ts:
+      path: /ts.zip
+    openapi:
+      path: /openapi
+      ui-path: /openapi-ui

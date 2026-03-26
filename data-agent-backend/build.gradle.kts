@@ -1,0 +1,30 @@
+plugins {
+    kotlin("jvm") version "2.3.0"
+    id("com.google.devtools.ksp") version "2.3.0"
+    id("org.springframework.boot") version "3.5.12"
+    id("tech.argonariod.gradle-plugin-jimmer") version "latest.release"
+}
+apply(plugin = "io.spring.dependency-management")
+
+group = "io.github.qifan777"
+version = "1.0"
+jimmer {
+    version = "0.10.6"
+}
+
+
+dependencies {
+    implementation("io.github.oshai:kotlin-logging-jvm:8.0.01")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.postgresql:postgresql")
+}
+kotlin {
+    jvmToolchain(21)
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
