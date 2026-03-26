@@ -14,6 +14,8 @@ jimmer {
 
 
 dependencies {
+    implementation("io.github.a2asdk:a2a-java-sdk-transport-jsonrpc:0.3.2.Final")
+    implementation("io.projectreactor.netty:reactor-netty")
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.01")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
