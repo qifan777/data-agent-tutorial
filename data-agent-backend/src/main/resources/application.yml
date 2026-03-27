@@ -10,6 +10,13 @@ spring:
     username:
     password:
     driver-class-name: org.postgresql.Driver
+  ai:
+    openai:
+      base-url: openai协议baseurl(不带v1)，例如 https://dashscope.aliyuncs.com/compatible-mode
+      api-key:
+      chat:
+        options:
+          model:
 jimmer:
   dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
   show-sql: true
