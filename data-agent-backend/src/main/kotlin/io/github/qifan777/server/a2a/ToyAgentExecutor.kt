@@ -10,73 +10,64 @@ import io.a2a.server.events.EventQueue
 import io.a2a.server.tasks.TaskUpdater
 import io.a2a.spec.DataPart
 import io.a2a.spec.TextPart
+import io.github.qifan777.server.graph.ToyGraphSpec
 import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicInteger
 
 @Component
-class ToyAgentExecutor(private val stateGraph: StateGraph) : AgentExecutor {
+class ToyAgentExecutor(
+    private val stateGraph: StateGraph,
+) : AgentExecutor {
+
     override fun execute(
-        context: RequestContext?,
+        context: RequestContext,
         eventQueue: EventQueue?
     ) {
         val taskUpdater = TaskUpdater(context, eventQueue)
         val artifactNum = AtomicInteger()
+
         fun handleNodeOutput(nodeOutput: NodeOutput) {
             if (nodeOutput is StreamingOutput<*>) {
                 when (nodeOutput.outputType) {
-                    OutputType.GRAPH_NODE_STREAMING -> taskUpdater.addArtifact(
-                        listOf(TextPart(nodeOutput.message().text)),
-                        artifactNum.incrementAndGet().toString(),
-                        nodeOutput.node(),
-                        mapOf(
-                            "outputType" to nodeOutput.outputType
-                        )
-                    )
+                    OutputType.GRAPH_NODE_STREAMING -> {
+                        val message = nodeOutput.message()
+                        if (message != null) {
+                            taskUpdater.addArtifact(
+                                listOf(TextPart(message.text)),
+                                artifactNum.incrementAndGet().toString(),
+                                nodeOutput.node(),
+                                mapOf("outputType" to nodeOutput.outputType)
+                            )
+                        }
+                    }
 
                     OutputType.GRAPH_NODE_FINISHED -> taskUpdater.addArtifact(
                         listOf(DataPart(nodeOutput.state().data())),
                         artifactNum.incrementAndGet().toString(),
                         nodeOutput.node(),
-                        mapOf(
-                            "outputType" to nodeOutput.outputType
-                        )
+                        mapOf("outputType" to nodeOutput.outputType)
                     )
 
                     else -> {}
                 }
-            } else {
-                taskUpdater.addArtifact(
-                    listOf(DataPart(nodeOutput.state().data())),
-                    artifactNum.incrementAndGet().toString(),
-                    nodeOutput.node(),
-                    mapOf()
-                )
+                return
             }
 
+            taskUpdater.addArtifact(
+                listOf(DataPart(nodeOutput.state().data())),
+                artifactNum.incrementAndGet().toString(),
+                nodeOutput.node(),
+                mapOf()
+            )
         }
 
-        val text = ((context?.message?.parts?.first { it is TextPart }) as TextPart).text
-        stateGraph.compile().stream(mapOf("input" to text))
+        val input = ((context.message.parts.first { it is TextPart }) as TextPart).text
+        stateGraph.compile()
+            .stream(mapOf(ToyGraphSpec.StateKey.INPUT to input))
             .doOnNext(::handleNodeOutput)
             .doOnComplete(taskUpdater::complete)
             .blockLast()
     }
-
-    //    override fun execute(
-//        context: RequestContext?,
-//        eventQueue: EventQueue?
-//    ) {
-//        val taskUpdater = TaskUpdater(context, eventQueue)
-//        val text = ((context?.message?.parts?.first { it is TextPart }) as TextPart).text
-//        taskUpdater.addArtifact(
-//            listOf(TextPart("hello from a2a: $text")),
-//            "1",
-//            "TOY_HELLO_NODE",
-//            mapOf("outputType" to "GRAPH_NODE_STREAMING")
-//        )
-//        taskUpdater.complete()
-//    }
-
 
     override fun cancel(
         context: RequestContext?,
