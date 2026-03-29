@@ -17,6 +17,8 @@ object ToyGraphSpec {
         const val SCENE_LABEL = "sceneLabel"
         const val DRAFT = "draft"
         const val FINAL_OUTPUT = "finalOutput"
+        const val CONFIRMATION_APPROVED = "confirmationApproved"
+        const val CONFIRMATION_FEEDBACK = "confirmationFeedback"
     }
 
     object Scene {
@@ -24,4 +26,18 @@ object ToyGraphSpec {
         const val STUDY = "study"
     }
 
+    object ArtifactOutputType {
+        const val HUMAN_CONFIRMATION = "HUMAN_CONFIRMATION"
+        const val HUMAN_CONFIRMED = "HUMAN_CONFIRMED"
+    }
+
+    object ArtifactDataKey {
+        const val NEED_CONFIRMATION = "needConfirmation"
+        const val CONFIRMED = "confirmed"
+    }
+
+    object MessageMetadataKey {
+        const val CONFIRMATION_APPROVED = "confirmationApproved"
+        const val CONFIRMATION_FEEDBACK = "confirmationFeedback"
+    }
 }

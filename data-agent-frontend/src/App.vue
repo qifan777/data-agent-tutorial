@@ -2,7 +2,12 @@
 import { Client, ClientFactory } from '@a2a-js/sdk/client'
 import { type AgentCard } from '@a2a-js/sdk'
 import { computed, markRaw, onMounted, reactive, ref, shallowRef } from 'vue'
-import {  TOY_GRAPH_NODE } from '@/constants/toy-graph-spec'
+import ConfirmNodeCard from '@/components/confirm-node-card.vue'
+import {
+  TOY_GRAPH_ARTIFACT_OUTPUT,
+  TOY_GRAPH_MESSAGE_METADATA,
+  TOY_GRAPH_NODE,
+} from '@/constants/toy-graph-spec'
 import RouteNodeCard from '@/components/route-node-card.vue'
 import StudyPlanNodeCard from '@/components/study-plan-node-card.vue'
 import TravelPlanNodeCard from '@/components/travel-plan-node-card.vue'
@@ -19,6 +24,7 @@ interface ToyStep {
 
 const NODE_COMPONENTS = {
   [TOY_GRAPH_NODE.ROUTE]: markRaw(RouteNodeCard),
+  [TOY_GRAPH_NODE.CONFIRM]: markRaw(ConfirmNodeCard),
   [TOY_GRAPH_NODE.TRAVEL_PLAN]: markRaw(TravelPlanNodeCard),
   [TOY_GRAPH_NODE.STUDY_PLAN]: markRaw(StudyPlanNodeCard),
   [TOY_GRAPH_NODE.WRAP_UP]: markRaw(WrapUpNodeCard),
@@ -33,6 +39,9 @@ const factory = new ClientFactory()
 const client = shallowRef<Client | undefined>()
 const steps = reactive<ToyStep[]>([])
 const userInput = ref(DEFAULT_EXAMPLES[0])
+const currentTaskId = ref<string>()
+const currentContextId = ref<string>()
+const awaitingConfirmation = ref(false)
 const upsertStep = (
   name: string,
   chunk: string,
@@ -61,6 +70,7 @@ const orderedSteps = computed(() => {
   return [...steps].sort((a, b) => {
     const order: string[] = [
       TOY_GRAPH_NODE.ROUTE,
+      TOY_GRAPH_NODE.CONFIRM,
       TOY_GRAPH_NODE.TRAVEL_PLAN,
       TOY_GRAPH_NODE.STUDY_PLAN,
       TOY_GRAPH_NODE.WRAP_UP,
@@ -71,12 +81,27 @@ const orderedSteps = computed(() => {
 
 const resetSteps = () => {
   steps.splice(0, steps.length)
+  currentTaskId.value = undefined
+  currentContextId.value = undefined
+  awaitingConfirmation.value = false
 }
 
-const handleSend = async () => {
-  const input = userInput.value?.trim() ?? ''
+const updateStepStatus = (name: string, status: ToyStep['status']) => {
+  const step = steps.find((item) => item.name === name)
+  if (step) {
+    step.status = status
+  }
+}
+
+const streamMessage = async (
+  input: string,
+  keepSteps = false,
+  metadata?: Record<string, unknown>,
+) => {
   if (!client.value || !input || isRunning.value) return
-  resetSteps()
+  if (!keepSteps) {
+    resetSteps()
+  }
   isRunning.value = true
   try {
     const stream = client.value.sendMessageStream({
@@ -84,10 +109,16 @@ const handleSend = async () => {
         messageId: crypto.randomUUID(),
         role: 'user',
         kind: 'message',
+        taskId: currentTaskId.value,
+        contextId: currentContextId.value,
+        metadata,
         parts: [{ kind: 'text', text: input }],
       },
     })
     for await (const event of stream) {
+      currentTaskId.value = 'taskId' in event ? event.taskId : currentTaskId.value
+      currentContextId.value = 'contextId' in event ? event.contextId : currentContextId.value
+
       if (event.kind === 'artifact-update') {
         const artifact = event.artifact
         const artifactName = artifact.name
@@ -95,13 +126,19 @@ const handleSend = async () => {
         const data = artifact.parts.find((p) => p.kind === 'data')?.data
 
         if (artifactName && artifactName in NODE_COMPONENTS) {
-          console.log(artifact)
           const status: ToyStep['status'] =
-            artifact.metadata?.outputType == 'GRAPH_NODE_FINISHED' ? 'success' : 'pending'
+            artifact.metadata?.outputType == TOY_GRAPH_ARTIFACT_OUTPUT.GRAPH_NODE_FINISHED ||
+              artifact.metadata?.outputType == TOY_GRAPH_ARTIFACT_OUTPUT.HUMAN_CONFIRMED
+              ? 'success'
+              : 'pending'
           upsertStep(artifactName, text, status, data)
         }
       }
+      if (event.kind === 'status-update' && event.status.state === 'input-required') {
+        awaitingConfirmation.value = true
+      }
       if (event.kind === 'status-update' && event.status.state === 'completed') {
+        awaitingConfirmation.value = false
       }
     }
   } finally {
@@ -109,6 +146,28 @@ const handleSend = async () => {
   }
 }
 
+const handleSend = async () => {
+  const input = userInput.value?.trim() ?? ''
+  await streamMessage(input, false)
+}
+
+const handleConfirm = async () => {
+  updateStepStatus(TOY_GRAPH_NODE.CONFIRM, 'success')
+  awaitingConfirmation.value = false
+  await streamMessage('确认继续', true, {
+    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_APPROVED]: true,
+    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_FEEDBACK]: '用户确认继续执行',
+  })
+}
+
+const handleCancel = async () => {
+  updateStepStatus(TOY_GRAPH_NODE.CONFIRM, 'success')
+  awaitingConfirmation.value = false
+  await streamMessage('取消', true, {
+    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_APPROVED]: false,
+    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_FEEDBACK]: '用户取消本次执行',
+  })
+}
 
 onMounted(async () => {
   client.value = await factory.createFromAgentCard(
@@ -180,6 +239,8 @@ onMounted(async () => {
           :data="step.data"
           :status="step.status"
           :disabled="isRunning"
+          @confirm="handleConfirm"
+          @cancel="handleCancel"
         />
       </div>
 
