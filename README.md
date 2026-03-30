@@ -32,7 +32,7 @@
 <img
 src="./A2A-client-server.png"
 alt="Data-Agent 宏观系统架构图"
-style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; border: 1px solid #e5e7eb;"
+width="900"
 />
 
 -----
@@ -64,7 +64,7 @@ style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; bord
 <img
 src="./demo_cut.png"
 alt="Data-Agent 系统最终效果图"
-style="width: 100%; max-height: 720px; object-fit: cover; object-position: top; border-radius: 12px; border: 1px solid #e5e7eb;"
+width="480"
 />
 
 ### 关键交互细节
@@ -76,7 +76,7 @@ style="width: 100%; max-height: 720px; object-fit: cover; object-position: top; 
 <img
 src="./img.png"
 alt="多节点编排效果"
-style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; border: 1px solid #e5e7eb;"
+width="900"
 />
 
 #### 人工确认（HITL）效果
@@ -86,7 +86,7 @@ style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; bord
 <img
 src="./img_1.png"
 alt="人工确认效果"
-style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; border: 1px solid #e5e7eb;"
+width="900"
 />
 
 -----
