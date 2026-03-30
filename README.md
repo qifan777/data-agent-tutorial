@@ -74,7 +74,7 @@ style="width: 100%; max-height: 720px; object-fit: cover; object-position: top; 
 [点击查看原图](./img.png)
 
 <img
-src="./02-graph-programming/img.png"
+src="./img.png"
 alt="多节点编排效果"
 style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; border: 1px solid #e5e7eb;"
 />
@@ -84,7 +84,7 @@ style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; bord
 [点击查看原图](./img_1.png)
 
 <img
-src="./02-graph-programming/img_1.png"
+src="./img_1.png"
 alt="人工确认效果"
 style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; border: 1px solid #e5e7eb;"
 />
