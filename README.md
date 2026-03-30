@@ -62,7 +62,7 @@ style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; bord
 [点击查看原图（完整长图）](./demo.png)
 
 <img
-src="./demo.png"
+src="./demo_cut.png"
 alt="Data-Agent 系统最终效果图"
 style="width: 100%; max-height: 720px; object-fit: cover; object-position: top; border-radius: 12px; border: 1px solid #e5e7eb;"
 />
