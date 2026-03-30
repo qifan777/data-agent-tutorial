@@ -25,6 +25,18 @@
 
 -----
 
+## 🧭 宏观系统架构图 (System Architecture)
+
+[点击查看原图](./A2A-client-server.png)
+
+<img
+src="./A2A-client-server.png"
+alt="Data-Agent 宏观系统架构图"
+style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; border: 1px solid #e5e7eb;"
+/>
+
+-----
+
 ## 🗺️ 端到端执行链路速览
 
 ```text
@@ -40,6 +52,42 @@
              └── 📊 报告整理 (Report Generation)
                   └── 前端流式打字机效果呈现 (A2UI)
 ```
+
+-----
+
+## 🖼️ 效果预览
+
+### 最终效果（长截图）
+
+[点击查看原图（完整长图）](./demo.png)
+
+<img
+src="./demo.png"
+alt="Data-Agent 系统最终效果图"
+style="width: 100%; max-height: 720px; object-fit: cover; object-position: top; border-radius: 12px; border: 1px solid #e5e7eb;"
+/>
+
+### 关键交互细节
+
+#### 多节点编排效果
+
+[点击查看原图](./img.png)
+
+<img
+src="./02-graph-programming/img.png"
+alt="多节点编排效果"
+style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; border: 1px solid #e5e7eb;"
+/>
+
+#### 人工确认（HITL）效果
+
+[点击查看原图](./img_1.png)
+
+<img
+src="./02-graph-programming/img_1.png"
+alt="人工确认效果"
+style="width: 100%; height: auto; object-fit: contain; border-radius: 12px; border: 1px solid #e5e7eb;"
+/>
 
 -----
 
@@ -79,6 +127,7 @@ rtk pnpm dev
 打开浏览器，发送一个自然语言问题，如果看到前端卡片开始呈现**流式节点打字机效果**，恭喜你，最小 Agent 闭环已通！
 
 -----
+
 
 ## 📖 教程导航 (自顶向下进阶)
 
