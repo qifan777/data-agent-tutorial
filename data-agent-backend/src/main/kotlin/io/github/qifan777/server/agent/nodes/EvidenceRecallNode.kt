@@ -4,7 +4,6 @@ import com.alibaba.cloud.ai.graph.OverAllState
 import com.alibaba.cloud.ai.graph.action.NodeAction
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.qifan777.server.agent.DataAgentSpec
-import io.github.qifan777.server.agent.DataAgentSpec.Graph.stringValue
 import io.github.qifan777.server.agent.model.EvidenceQueryRewriteDTO
 import io.github.qifan777.server.agent.prompt.PromptManager
 import io.github.qifan777.server.agent.uuidOrNull
@@ -29,8 +28,8 @@ class EvidenceRecallNode(
     private val promptManager: PromptManager
 ) : NodeAction {
     override fun apply(state: OverAllState): Map<String, Any> {
-        val userInput = stringValue(state, DataAgentSpec.Graph.StateKey.Input.USER_INPUT)
-        val databaseId = stringValue(state, DataAgentSpec.Graph.StateKey.Input.DATABASE_ID)
+        val userInput = state.value(DataAgentSpec.Graph.StateKey.Input.USER_INPUT, "")
+        val databaseId = state.value(DataAgentSpec.Graph.StateKey.Input.DATABASE_ID, "")
         val multiTurn = state.value(DataAgentSpec.Graph.StateKey.Input.MULTI_TURN_CONTEXT, "(无)")
         val beanOutputConverter: BeanOutputConverter<EvidenceQueryRewriteDTO> =
             BeanOutputConverter(
@@ -87,23 +86,16 @@ class EvidenceRecallNode(
 
     fun retrieveGlossaryKnowledge(question: String, databaseId: String): List<Document> {
         val builder = FilterExpressionBuilder()
-        val expression = if (databaseId.isBlank()) {
+        val filterExpression = builder.and(
             builder.eq(
                 DataAgentSpec.Retrieval.DocumentMetadataKey.VECTOR_TYPE,
                 DataAgentSpec.Retrieval.VectorType.GLOSSARY_KNOWLEDGE
-            ).build()
-        } else {
-            builder.and(
-                builder.eq(
-                    DataAgentSpec.Retrieval.DocumentMetadataKey.VECTOR_TYPE,
-                    DataAgentSpec.Retrieval.VectorType.GLOSSARY_KNOWLEDGE
-                ),
-                builder.eq(DataAgentSpec.Retrieval.DocumentMetadataKey.DATABASE_ID, databaseId)
-            ).build()
-        }
+            ),
+            builder.eq(DataAgentSpec.Retrieval.DocumentMetadataKey.DATABASE_ID, databaseId)
+        ).build()
         val request = SearchRequest.builder()
             .query(question)
-            .filterExpression(expression)
+            .filterExpression(filterExpression)
             .topK(4)
             .build()
         return vectorStore.similaritySearch(request)

@@ -1,11 +1,9 @@
 package io.github.qifan777.server.dataset.knowledge.domain
 
-import io.github.qifan777.server.agent.DataAgentSpec
 import org.babyfish.jimmer.sql.Entity
 import org.babyfish.jimmer.sql.GeneratedValue
 import org.babyfish.jimmer.sql.Id
 import org.babyfish.jimmer.sql.meta.UUIDIdGenerator
-import org.springframework.ai.document.Document
 import java.util.*
 
 @Entity
