@@ -20,13 +20,3 @@ interface GlossaryKnowledge  {
     val synonyms: String?
 }
 
-fun GlossaryKnowledge.toDocument(): Document {
-    return Document(
-        "业务名词: $term, 说明: $description, 同义词: $synonyms",
-        mapOf(
-            DataAgentSpec.Retrieval.DocumentMetadataKey.VECTOR_TYPE to DataAgentSpec.Retrieval.VectorType.GLOSSARY_KNOWLEDGE,
-            DataAgentSpec.Retrieval.DocumentMetadataKey.DATABASE_ID to databaseId,
-            DataAgentSpec.Retrieval.DocumentMetadataKey.BUSINESS_TERM_ID to id
-        )
-    )
-}

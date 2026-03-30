@@ -8,9 +8,9 @@ object DataAgentSpec {
             const val TABLE_ID = "tableId"
             const val COLUMN_ID = "columnId"
             const val KNOWLEDGE_ID = "knowledgeId"
-            const val VECTOR_TYPE = "vectorType"
             const val DATABASE_ID = "databaseId"
             const val BUSINESS_TERM_ID = "businessTermId"
+            const val VECTOR_TYPE = "vectorType"
         }
 
         object VectorType {

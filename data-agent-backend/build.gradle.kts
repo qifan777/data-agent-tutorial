@@ -17,6 +17,7 @@ jimmer {
 
 dependencies {
     implementation(platform("org.springframework.ai:spring-ai-bom:1.1.2"))
+    implementation("org.springframework.ai:spring-ai-starter-vector-store-pgvector")
     implementation("org.springframework.ai:spring-ai-starter-model-openai")
     implementation("com.alibaba.cloud.ai:spring-ai-alibaba-graph-core:1.1.2.2")
     implementation("io.github.a2asdk:a2a-java-sdk-transport-jsonrpc:0.3.2.Final")

@@ -1,4 +1,4 @@
-package io.github.qifan777.server.intergration.a2a
+package io.github.qifan777.server.integration.a2a
 
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonProcessingException

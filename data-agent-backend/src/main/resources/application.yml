@@ -17,6 +17,15 @@ spring:
       chat:
         options:
           model:
+      embedding:
+        options:
+          model: text-embedding-v4（阿里的）
+    vectorstore:
+      pgvector:
+        index-type: HNSW      # 2026 年主流的高性能索引
+        distance-type: cosine_distance # 语义搜索常用的余弦相似度
+        dimensions: 1024      # text-embedding-v4 维度，如果更换了嵌入模型需要删除vector_store表重建
+        initialize-schema: true  # 不填dimensions其实也可以，但是这样很多人换了模型不知道要修改dimensions，spring ai会自动初始化向量维度
 jimmer:
   dialect: org.babyfish.jimmer.sql.dialect.PostgresDialect
   show-sql: true

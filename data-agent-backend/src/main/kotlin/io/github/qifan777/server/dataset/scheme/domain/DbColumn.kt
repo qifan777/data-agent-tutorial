@@ -28,15 +28,3 @@ interface DbColumn  {
     val dbTable: DbTable
 }
 
-fun DbColumn.toDocument(): Document {
-    // 确保必要字段已加载，或者在 Repository 层强制 Fetch
-    return Document(
-        description,
-        mapOf(
-            DataAgentSpec.Retrieval.DocumentMetadataKey.VECTOR_TYPE to DataAgentSpec.Retrieval.VectorType.COLUMN,
-            DataAgentSpec.Retrieval.DocumentMetadataKey.DATABASE_ID to dbTable.databaseId,
-            DataAgentSpec.Retrieval.DocumentMetadataKey.TABLE_ID to dbTable.id,
-            DataAgentSpec.Retrieval.DocumentMetadataKey.COLUMN_ID to id
-        )
-    )
-}
