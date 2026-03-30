@@ -6,7 +6,7 @@ spring:
   profiles:
     active: private
   datasource:
-    url: jdbc:postgresql://localhost:5432/data_agent
+    url: jdbc:postgresql://localhost:5432/data_agent_tutorial
     username:
     password:
     driver-class-name: org.postgresql.Driver

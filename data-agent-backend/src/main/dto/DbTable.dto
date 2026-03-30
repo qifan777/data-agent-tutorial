@@ -1,0 +1,11 @@
+export io.github.qifan777.server.dataset.scheme.domain.DbTable
+
+DbTableSchemaView {
+    name
+    columns {
+        name
+        type
+        description
+        isPrimaryKey
+    }
+}

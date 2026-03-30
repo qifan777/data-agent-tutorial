@@ -1,0 +1,16 @@
+export io.github.qifan777.server.dataset.scheme.domain.DbForeignKey
+
+DbForeignKeySchemaView {
+    sourceColumn {
+        name
+        dbTable {
+            name
+        }
+    }
+    targetColumn {
+        name
+        dbTable {
+            name
+        }
+    }
+}

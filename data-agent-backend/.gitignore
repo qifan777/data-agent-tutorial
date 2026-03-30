@@ -45,3 +45,4 @@ bin/
 .DS_Store
 /gradle/
 /src/main/resources/application-private.yml
+/src/main/resources/dev_20240627/
