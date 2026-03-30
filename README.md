@@ -3,7 +3,7 @@
 > **告别“玩具级” Demo！** 本教程专为想把大模型应用从 POC 落地到生产环境的开发者打造。
 > 我们将自顶向下，带你从搭建基础架构开始，一步步构建一个具备**图编排 (StateGraph)**、**双重 RAG 检索**、**自我纠错 (Self-Correction)** 以及**人机协同 (HITL)** 能力的工业级 Text2SQL 数据智能体。
 
-📚 **项目仓库:** [data-agent-tutorial](https://github.com/qifan777/data-agent-tutorial) | 💡 **学习策略:** 分支对照，每章即刻运行，所见即所得。
+📚 **项目仓库:** [data-agent-tutorial](https://github.com/qifan777/data-agent-tutorial) | 🔗 **参考项目:** [spring-ai-alibaba/DataAgent](https://github.com/spring-ai-alibaba/DataAgent) | 💡 **学习策略:** 分支对照，每章即刻运行，所见即所得。
 
 -----
 
