@@ -1,0 +1,50 @@
+package io.github.qifan777.server.agent.config
+
+import com.alibaba.cloud.ai.graph.KeyStrategy
+import com.alibaba.cloud.ai.graph.KeyStrategyFactory
+import com.alibaba.cloud.ai.graph.OverAllState
+import com.alibaba.cloud.ai.graph.StateGraph
+import com.alibaba.cloud.ai.graph.StateGraph.END
+import com.alibaba.cloud.ai.graph.StateGraph.START
+import com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async
+import com.alibaba.cloud.ai.graph.serializer.StateSerializer
+import com.alibaba.cloud.ai.graph.serializer.plain_text.jackson.SpringAIJacksonStateSerializer
+import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import io.github.qifan777.server.agent.DataAgentSpec
+import io.github.qifan777.server.agent.nodes.EvidenceRecallNode
+import org.babyfish.jimmer.jackson.v2.ImmutableModuleV2
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+
+@Configuration
+open class GraphConfiguration {
+    @Bean
+    open fun serializer(): SpringAIJacksonStateSerializer {
+        val serializer =
+            SpringAIJacksonStateSerializer { OverAllState(it) }
+        serializer.objectMapper().registerModules(JavaTimeModule())
+        serializer.objectMapper().registerModules(ImmutableModuleV2())
+        return serializer
+    }
+
+    @Bean
+    open fun graph(
+        evidenceRecallNode: EvidenceRecallNode,
+        serializer: StateSerializer
+    ): StateGraph {
+        val keyStrategyFactory = KeyStrategyFactory {
+            val map = mutableMapOf<String, KeyStrategy>()
+            map[DataAgentSpec.Graph.StateKey.Recall.REWRITE_QUERY] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Recall.EVIDENCE] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Input.DATABASE_ID] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Input.USER_INPUT] = ReplaceStrategy()
+            map
+        }
+        return StateGraph(DataAgentSpec.GRAPH_NAME, keyStrategyFactory, serializer)
+            .addNode(DataAgentSpec.Graph.Node.EVIDENCE_RECALL, node_async(evidenceRecallNode))
+            .addEdge(START, DataAgentSpec.Graph.Node.EVIDENCE_RECALL)
+            .addEdge(DataAgentSpec.Graph.Node.EVIDENCE_RECALL, END)
+
+    }
+}
