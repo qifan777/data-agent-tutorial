@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Client, ClientFactory } from '@a2a-js/sdk/client'
 import EvidenceRecallNodeCard from '@/components/evidence-recall-node-card.vue'
+import FeasibilityAssessmentNodeCard from '@/components/feasibility-assessment-node-card.vue'
+import PlannerNodeCard from '@/components/planner-node-card.vue'
 import SchemeRecallNodeCard from '@/components/scheme-recall-node-card.vue'
 import TableRelationNodeCard from '@/components/table-relation-node-card.vue'
 import { type AgentCard } from '@a2a-js/sdk'
@@ -24,6 +26,8 @@ const NODE_COMPONENTS: Record<string, Component> = {
   [DATA_AGENT_GRAPH_NODE.EVIDENCE_RECALL]: markRaw(EvidenceRecallNodeCard),
   [DATA_AGENT_GRAPH_NODE.SCHEMA_RECALL]: markRaw(SchemeRecallNodeCard),
   [DATA_AGENT_GRAPH_NODE.TABLE_RELATION]: markRaw(TableRelationNodeCard),
+  [DATA_AGENT_GRAPH_NODE.FEASIBILITY_ASSESSMENT]: markRaw(FeasibilityAssessmentNodeCard),
+  [DATA_AGENT_GRAPH_NODE.PLANNER]: markRaw(PlannerNodeCard),
 }
 
 const DEFAULT_EXAMPLES = [
@@ -79,6 +83,8 @@ const orderedSteps = computed(() => {
     DATA_AGENT_GRAPH_NODE.EVIDENCE_RECALL,
     DATA_AGENT_GRAPH_NODE.SCHEMA_RECALL,
     DATA_AGENT_GRAPH_NODE.TABLE_RELATION,
+    DATA_AGENT_GRAPH_NODE.FEASIBILITY_ASSESSMENT,
+    DATA_AGENT_GRAPH_NODE.PLANNER,
   ]
   return flowOrder
     .map((name) => steps.find((step) => step.name === name))
