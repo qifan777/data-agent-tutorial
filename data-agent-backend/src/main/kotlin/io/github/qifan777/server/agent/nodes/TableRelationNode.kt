@@ -14,6 +14,7 @@ import io.github.qifan777.server.dataset.scheme.domain.dto.DbForeignKeySchemaVie
 import io.github.qifan777.server.dataset.scheme.domain.dto.DbTableSchemaView
 import io.github.qifan777.server.dataset.scheme.repository.DbForeignKeyRepository
 import io.github.qifan777.server.dataset.scheme.repository.DbTableRepository
+import io.github.qifan777.server.shared.json.JsonUtil
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.document.Document
@@ -139,11 +140,13 @@ class TableRelationNode(
             "mix select filter tables $filterResult"
         }
         return mapOf(
-            DataAgentSpec.Graph.StateKey.Recall.TABLE_RELATION to Schema(
-                databaseId,
-                filterTables.map { DbTableSchemaView(it) },
-                filterForeignKeys.map { DbForeignKeySchemaView(it) },
-            )
+            DataAgentSpec.Graph.StateKey.Recall.TABLE_RELATION to JsonUtil.toJson(
+                Schema(
+                    databaseId,
+                    filterTables.map { DbTableSchemaView(it) },
+                    filterForeignKeys.map { DbForeignKeySchemaView(it) },
+                )
+            )!!
         )
     }
 

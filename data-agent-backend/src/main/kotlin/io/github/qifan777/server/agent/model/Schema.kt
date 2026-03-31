@@ -15,14 +15,15 @@ data class Schema(
     val databaseId: String,
     val dbTables: List<DbTableSchemaView>,
     val dbForeignKeys: List<DbForeignKeySchemaView>,
-    val enableExampleSampling: Boolean = false,
-    val dataSourceProvider: SchemaDataSourceProvider = SqliteSchemaDataSourceProvider,
+    val enableExampleSampling: Boolean = false
 ) {
-    fun buildSchemePrompt(): String {
+    fun buildSchemePrompt(
+        dataSourceProvider: SchemaDataSourceProvider = SqliteSchemaDataSourceProvider,
+    ): String {
         val schemeBuilder = StringBuilder()
         schemeBuilder.append("【DB_ID】 $databaseId\n")
         dbTables.forEach {
-            schemeBuilder.append(buildTablePrompt(it))
+            schemeBuilder.append(buildTablePrompt(it, dataSourceProvider))
         }
         val keys = dbForeignKeys.joinToString("\n") { it.toExpression() }
         schemeBuilder.append("【Foreign keys】\n$keys")
@@ -30,10 +31,10 @@ data class Schema(
         return schemeBuilder.toString()
     }
 
-    fun buildTablePrompt(dbTable: DbTableSchemaView): String {
+    fun buildTablePrompt(dbTable: DbTableSchemaView, dataSourceProvider: SchemaDataSourceProvider): String {
         val builder = StringBuilder()
         val primaryKeys = dbTable.columns.filter { it.isPrimaryKey }.map { it.name }.toSet()
-        val examplesByColumn = if (enableExampleSampling) loadExamples(dbTable) else emptyMap()
+        val examplesByColumn = if (enableExampleSampling) loadExamples(dbTable, dataSourceProvider) else emptyMap()
         builder.append("# Table: ${dbTable.name}\n[\n")
         dbTable.columns.forEach { columnDto ->
             builder.append("(${columnDto.name}: ${columnDto.type}\n, ${columnDto.description}, ")
@@ -47,7 +48,10 @@ data class Schema(
         return builder.toString()
     }
 
-    private fun loadExamples(dbTable: DbTableSchemaView): Map<String, List<String>> {
+    private fun loadExamples(
+        dbTable: DbTableSchemaView,
+        dataSourceProvider: SchemaDataSourceProvider
+    ): Map<String, List<String>> {
         return runCatching {
             dataSourceProvider.get(databaseId).connection.use { connection ->
                 dbTable.columns.associate { column ->
