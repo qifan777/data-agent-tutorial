@@ -48,8 +48,8 @@ object DataAgentSpec {
             }
 
             object HumanReview {
-                const val FEEDBACK = "HUMAN_FEEDBACK_NODE_OUTPUT"
-                const val REVIEW_ENABLED = "HUMAN_REVIEW_ENABLED"
+                const val CONFIRMATION_APPROVED = "confirmationApproved"
+                const val CONFIRMATION_FEEDBACK = "confirmationFeedback"
                 const val NEXT_NODE = "HUMAN_NEXT_NODE"
             }
 
