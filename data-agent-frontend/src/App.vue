@@ -11,6 +11,7 @@ import {
   DATA_AGENT_ARTIFACT_OUTPUT,
   DATA_AGENT_GRAPH_NODE,
   DATA_AGENT_MESSAGE_METADATA,
+  DATA_AGENT_NODE_ORDER,
 } from '@/constants/data-agent-graph-spec'
 import { api } from '@/utils/api-instance.ts'
 
@@ -54,6 +55,9 @@ const userInput = ref(DEFAULT_EXAMPLES[0])
 const selectedDatabase = ref<(typeof DATABASE_OPTIONS)[number]>('california_schools')
 const currentTaskId = ref<string>()
 const currentContextId = ref<string>()
+const awaitingConfirmation = ref(false)
+const confirmationApproved = ref(true)
+const confirmationFeedback = ref('用户确认继续执行')
 const upsertStep = (
   name: string,
   chunk: string,
@@ -79,14 +83,7 @@ const upsertStep = (
 const isRunning = ref(false)
 
 const orderedSteps = computed(() => {
-  const flowOrder = [
-    DATA_AGENT_GRAPH_NODE.EVIDENCE_RECALL,
-    DATA_AGENT_GRAPH_NODE.SCHEMA_RECALL,
-    DATA_AGENT_GRAPH_NODE.TABLE_RELATION,
-    DATA_AGENT_GRAPH_NODE.FEASIBILITY_ASSESSMENT,
-    DATA_AGENT_GRAPH_NODE.PLANNER,
-  ]
-  return flowOrder
+  return DATA_AGENT_NODE_ORDER
     .map((name) => steps.find((step) => step.name === name))
     .filter((step): step is GraphStep => Boolean(step))
 })
@@ -95,6 +92,9 @@ const resetSteps = () => {
   steps.splice(0, steps.length)
   currentTaskId.value = undefined
   currentContextId.value = undefined
+  awaitingConfirmation.value = false
+  confirmationApproved.value = true
+  confirmationFeedback.value = '用户确认继续执行'
 }
 
 const markAllPendingStepAsSuccess = () => {
@@ -148,7 +148,11 @@ const streamMessage = async (
         }
       }
       if (event.kind === 'status-update' && event.status.state === 'completed') {
+        awaitingConfirmation.value = false
         markAllPendingStepAsSuccess()
+      }
+      if (event.kind === 'status-update' && event.status.state === 'input-required') {
+        awaitingConfirmation.value = true
       }
     }
   } finally {
@@ -159,6 +163,17 @@ const streamMessage = async (
 const handleSend = async () => {
   const input = userInput.value?.trim() ?? ''
   await streamMessage(input, false)
+}
+
+const submitConfirmation = async () => {
+  awaitingConfirmation.value = false
+  const approved = confirmationApproved.value
+  const feedback = (confirmationFeedback.value || '').trim()
+  await streamMessage(feedback || (approved ? '确认继续' : '取消本次执行'), true, {
+    [DATA_AGENT_MESSAGE_METADATA.CONFIRMATION_APPROVED]: approved,
+    [DATA_AGENT_MESSAGE_METADATA.CONFIRMATION_FEEDBACK]:
+      feedback || (approved ? '用户确认继续执行' : '用户取消本次执行'),
+  })
 }
 
 onMounted(async () => {
@@ -251,7 +266,32 @@ onMounted(async () => {
         </template>
       </div>
 
-      <div v-else class="empty-state">
+      <div v-if="awaitingConfirmation" class="human-input-panel">
+        <h3>需要人工输入</h3>
+        <p>请填写确认结果和反馈，提交后会继续执行后续节点。</p>
+        <div class="human-input-panel__field">
+          <div class="human-input-panel__label">确认结果</div>
+          <el-radio-group v-model="confirmationApproved">
+            <el-radio :value="true">确认继续</el-radio>
+            <el-radio :value="false">取消执行</el-radio>
+          </el-radio-group>
+        </div>
+        <div class="human-input-panel__field">
+          <div class="human-input-panel__label">反馈内容</div>
+          <el-input
+            v-model="confirmationFeedback"
+            type="textarea"
+            :rows="3"
+            resize="none"
+            placeholder="请输入反馈，将映射到 confirmationFeedback"
+          />
+        </div>
+        <el-button type="primary" :loading="isRunning" @click="submitConfirmation">
+          提交人工输入
+        </el-button>
+      </div>
+
+      <div v-else-if="!orderedSteps.length" class="empty-state">
         <div class="empty-state__title">还没有节点输出</div>
         <div class="empty-state__desc">
           点击上面的示例，或者自己输入一句需求，就能看到 graph 的执行过程。
@@ -408,6 +448,37 @@ onMounted(async () => {
 .timeline-panel__list {
   display: grid;
   gap: 16px;
+}
+
+.human-input-panel {
+  margin-top: 18px;
+  border: 1px solid rgba(168, 85, 247, 0.24);
+  border-radius: 16px;
+  padding: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.1), transparent 32%),
+    linear-gradient(180deg, #ffffff, #faf5ff);
+}
+
+.human-input-panel h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #0f172a;
+}
+
+.human-input-panel p {
+  margin: 8px 0 0;
+  color: #475569;
+}
+
+.human-input-panel__field {
+  margin: 14px 0;
+}
+
+.human-input-panel__label {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #334155;
 }
 
 .node-card {

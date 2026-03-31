@@ -37,6 +37,8 @@ export const DATA_AGENT_ARTIFACT_OUTPUT = {
 
 export const DATA_AGENT_MESSAGE_METADATA = {
   DATABASE_ID: 'databaseId',
+  CONFIRMATION_APPROVED: 'confirmationApproved',
+  CONFIRMATION_FEEDBACK: 'confirmationFeedback',
 } as const
 
 export const DATA_AGENT_STATE_KEY_RECALL = {

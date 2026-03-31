@@ -18,6 +18,7 @@ class PlannerNode(private val chatModel: ChatModel, private val promptManager: P
         val rewriteQuery = state.value(DataAgentSpec.Graph.StateKey.Recall.REWRITE_QUERY, "")
         val schemeDto =
             state.value(DataAgentSpec.Graph.StateKey.Recall.TABLE_RELATION, Schema::class.java).orElseThrow()
+        val feedbackContent = state.value(DataAgentSpec.Graph.StateKey.HumanReview.CONFIRMATION_FEEDBACK, "");
         val schemePrompt = schemeDto.buildSchemePrompt()
         val evidence = state.value(DataAgentSpec.Graph.StateKey.Recall.EVIDENCE, "")
         val beanOutputConverter = BeanOutputConverter(Plan::class.java)
@@ -27,7 +28,7 @@ class PlannerNode(private val chatModel: ChatModel, private val promptManager: P
                 "schema" to schemePrompt,
                 "evidence" to evidence,
                 "semantic_model" to "",
-                "plan_validation_error" to "",
+                "plan_validation_error" to feedbackContent,
                 "format" to beanOutputConverter.format
             )
         )

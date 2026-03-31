@@ -14,6 +14,7 @@ import com.alibaba.cloud.ai.graph.state.strategy.ReplaceStrategy
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.github.qifan777.server.agent.DataAgentSpec
 import io.github.qifan777.server.agent.edges.FeasibilityAssessmentEdge
+import io.github.qifan777.server.agent.edges.HumanFeedbackEdge
 import io.github.qifan777.server.agent.nodes.*
 import org.babyfish.jimmer.jackson.v2.ImmutableModuleV2
 import org.springframework.context.annotation.Bean
@@ -37,19 +38,31 @@ open class GraphConfiguration {
         tableRelationNode: TableRelationNode,
         feasibilityAssessmentNode: FeasibilityAssessmentNode,
         plannerNode: PlannerNode,
-        serializer: StateSerializer
+        serializer: StateSerializer, humanFeedbackNode: HumanFeedbackNode, planExecuteNode: PlanExecuteNode
     ): StateGraph {
         val keyStrategyFactory = KeyStrategyFactory {
             val map = mutableMapOf<String, KeyStrategy>()
+            map[DataAgentSpec.Graph.StateKey.Input.USER_INPUT] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Input.DATABASE_ID] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Input.MULTI_TURN_CONTEXT] = ReplaceStrategy()
+
             map[DataAgentSpec.Graph.StateKey.Recall.REWRITE_QUERY] = ReplaceStrategy()
             map[DataAgentSpec.Graph.StateKey.Recall.EVIDENCE] = ReplaceStrategy()
             map[DataAgentSpec.Graph.StateKey.Recall.TABLE_SCHEMA] = ReplaceStrategy()
             map[DataAgentSpec.Graph.StateKey.Recall.COLUMN_SCHEMA] = ReplaceStrategy()
             map[DataAgentSpec.Graph.StateKey.Recall.TABLE_RELATION] = ReplaceStrategy()
-            map[DataAgentSpec.Graph.StateKey.Execution.FEASIBILITY_RESULT] = ReplaceStrategy()
+
             map[DataAgentSpec.Graph.StateKey.Planning.PLAN] = ReplaceStrategy()
-            map[DataAgentSpec.Graph.StateKey.Input.DATABASE_ID] = ReplaceStrategy()
-            map[DataAgentSpec.Graph.StateKey.Input.USER_INPUT] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Planning.REPAIR_COUNT] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Planning.NEXT_NODE] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Planning.CURRENT_STEP] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Planning.EXECUTION_OUTPUT] = ReplaceStrategy()
+
+            map[DataAgentSpec.Graph.StateKey.HumanReview.CONFIRMATION_APPROVED] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.HumanReview.CONFIRMATION_FEEDBACK] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.HumanReview.NEXT_NODE] = ReplaceStrategy()
+
+            map[DataAgentSpec.Graph.StateKey.Execution.FEASIBILITY_RESULT] = ReplaceStrategy()
             map
         }
         return StateGraph(DataAgentSpec.GRAPH_NAME, keyStrategyFactory, serializer)
@@ -58,6 +71,8 @@ open class GraphConfiguration {
             .addNode(DataAgentSpec.Graph.Node.TABLE_RELATION, node_async(tableRelationNode))
             .addNode(DataAgentSpec.Graph.Node.FEASIBILITY_ASSESSMENT, node_async(feasibilityAssessmentNode))
             .addNode(DataAgentSpec.Graph.Node.PLANNER, node_async(plannerNode))
+            .addNode(DataAgentSpec.Graph.Node.HUMAN_FEEDBACK, node_async(humanFeedbackNode))
+            .addNode(DataAgentSpec.Graph.Node.PLAN_EXECUTION, node_async(planExecuteNode))
             .addEdge(START, DataAgentSpec.Graph.Node.EVIDENCE_RECALL)
             .addEdge(DataAgentSpec.Graph.Node.EVIDENCE_RECALL, DataAgentSpec.Graph.Node.SCHEMA_RECALL)
             .addEdge(DataAgentSpec.Graph.Node.SCHEMA_RECALL, DataAgentSpec.Graph.Node.TABLE_RELATION)
@@ -70,6 +85,14 @@ open class GraphConfiguration {
                     END to END,
                 )
             )
-            .addEdge(DataAgentSpec.Graph.Node.PLANNER, END)
+            .addEdge(DataAgentSpec.Graph.Node.PLANNER, DataAgentSpec.Graph.Node.HUMAN_FEEDBACK)
+            .addConditionalEdges(
+                DataAgentSpec.Graph.Node.HUMAN_FEEDBACK, edge_async(HumanFeedbackEdge()),
+                mapOf(
+                    END to END,
+                    DataAgentSpec.Graph.Node.PLAN_EXECUTION to DataAgentSpec.Graph.Node.PLAN_EXECUTION,
+                    DataAgentSpec.Graph.Node.PLANNER to DataAgentSpec.Graph.Node.PLANNER
+                )
+            ).addEdge(DataAgentSpec.Graph.Node.PLAN_EXECUTION, END)
     }
 }
