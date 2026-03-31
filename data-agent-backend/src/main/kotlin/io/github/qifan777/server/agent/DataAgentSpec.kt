@@ -68,6 +68,10 @@ object DataAgentSpec {
         }
     }
 
+    object MessageMetadataKey {
+        const val DATABASE_ID = "databaseId"
+    }
+
     object Retrieval {
         object DocumentMetadataKey {
             const val TABLE_ID = "tableId"
