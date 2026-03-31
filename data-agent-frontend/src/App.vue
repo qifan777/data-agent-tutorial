@@ -2,7 +2,6 @@
 import { Client, ClientFactory } from '@a2a-js/sdk/client'
 import { type AgentCard } from '@a2a-js/sdk'
 import { computed, markRaw, onMounted, reactive, ref, shallowRef } from 'vue'
-import ConfirmNodeCard from '@/components/confirm-node-card.vue'
 import {
   TOY_GRAPH_ARTIFACT_OUTPUT,
   TOY_GRAPH_MESSAGE_METADATA,
@@ -24,7 +23,6 @@ interface ToyStep {
 
 const NODE_COMPONENTS = {
   [TOY_GRAPH_NODE.ROUTE]: markRaw(RouteNodeCard),
-  [TOY_GRAPH_NODE.CONFIRM]: markRaw(ConfirmNodeCard),
   [TOY_GRAPH_NODE.TRAVEL_PLAN]: markRaw(TravelPlanNodeCard),
   [TOY_GRAPH_NODE.STUDY_PLAN]: markRaw(StudyPlanNodeCard),
   [TOY_GRAPH_NODE.WRAP_UP]: markRaw(WrapUpNodeCard),
@@ -42,6 +40,8 @@ const userInput = ref(DEFAULT_EXAMPLES[0])
 const currentTaskId = ref<string>()
 const currentContextId = ref<string>()
 const awaitingConfirmation = ref(false)
+const confirmationApproved = ref(true)
+const confirmationFeedback = ref('用户确认继续执行')
 const upsertStep = (
   name: string,
   chunk: string,
@@ -51,7 +51,7 @@ const upsertStep = (
   const existing = steps.find((step) => step.name === name)
   if (existing) {
     existing.content += chunk
-    existing.status = status
+    existing.status = status || existing.status
     existing.data = { ...existing.data, ...data }
     return
   }
@@ -70,7 +70,6 @@ const orderedSteps = computed(() => {
   return [...steps].sort((a, b) => {
     const order: string[] = [
       TOY_GRAPH_NODE.ROUTE,
-      TOY_GRAPH_NODE.CONFIRM,
       TOY_GRAPH_NODE.TRAVEL_PLAN,
       TOY_GRAPH_NODE.STUDY_PLAN,
       TOY_GRAPH_NODE.WRAP_UP,
@@ -84,13 +83,8 @@ const resetSteps = () => {
   currentTaskId.value = undefined
   currentContextId.value = undefined
   awaitingConfirmation.value = false
-}
-
-const updateStepStatus = (name: string, status: ToyStep['status']) => {
-  const step = steps.find((item) => item.name === name)
-  if (step) {
-    step.status = status
-  }
+  confirmationApproved.value = true
+  confirmationFeedback.value = '用户确认继续执行'
 }
 
 const streamMessage = async (
@@ -126,12 +120,20 @@ const streamMessage = async (
         const data = artifact.parts.find((p) => p.kind === 'data')?.data
 
         if (artifactName && artifactName in NODE_COMPONENTS) {
-          const status: ToyStep['status'] =
-            artifact.metadata?.outputType == TOY_GRAPH_ARTIFACT_OUTPUT.GRAPH_NODE_FINISHED ||
-              artifact.metadata?.outputType == TOY_GRAPH_ARTIFACT_OUTPUT.HUMAN_CONFIRMED
-              ? 'success'
-              : 'pending'
-          upsertStep(artifactName, text, status, data)
+          let status: ToyStep['status'] | undefined
+          switch (artifact.metadata?.outputType) {
+            case TOY_GRAPH_ARTIFACT_OUTPUT.GRAPH_NODE_FINISHED:
+              status = 'success'
+              break
+            case TOY_GRAPH_ARTIFACT_OUTPUT.GRAPH_NODE_STREAMING:
+              status = 'pending'
+              break
+            default:
+              status = undefined
+          }
+          if (status) {
+            upsertStep(artifactName, text, status, data)
+          }
         }
       }
       if (event.kind === 'status-update' && event.status.state === 'input-required') {
@@ -151,21 +153,14 @@ const handleSend = async () => {
   await streamMessage(input, false)
 }
 
-const handleConfirm = async () => {
-  updateStepStatus(TOY_GRAPH_NODE.CONFIRM, 'success')
+const submitConfirmation = async () => {
   awaitingConfirmation.value = false
-  await streamMessage('确认继续', true, {
-    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_APPROVED]: true,
-    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_FEEDBACK]: '用户确认继续执行',
-  })
-}
-
-const handleCancel = async () => {
-  updateStepStatus(TOY_GRAPH_NODE.CONFIRM, 'success')
-  awaitingConfirmation.value = false
-  await streamMessage('取消', true, {
-    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_APPROVED]: false,
-    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_FEEDBACK]: '用户取消本次执行',
+  const approved = confirmationApproved.value
+  const feedback = (confirmationFeedback.value || '').trim()
+  await streamMessage(feedback || (approved ? '确认继续' : '取消本次执行'), true, {
+    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_APPROVED]: approved,
+    [TOY_GRAPH_MESSAGE_METADATA.CONFIRMATION_FEEDBACK]:
+      feedback || (approved ? '用户确认继续执行' : '用户取消本次执行'),
   })
 }
 
@@ -238,13 +233,35 @@ onMounted(async () => {
           :content="step.content"
           :data="step.data"
           :status="step.status"
-          :disabled="isRunning"
-          @confirm="handleConfirm"
-          @cancel="handleCancel"
         />
       </div>
 
-      <div v-else class="empty-state">
+      <div v-if="awaitingConfirmation" class="human-input-panel">
+        <h3>需要人工输入</h3>
+        <p>请填写确认结果和反馈，提交后会继续执行后续节点。</p>
+        <div class="human-input-panel__field">
+          <div class="human-input-panel__label">确认结果</div>
+          <el-radio-group v-model="confirmationApproved">
+            <el-radio :value="true">确认继续</el-radio>
+            <el-radio :value="false">取消执行</el-radio>
+          </el-radio-group>
+        </div>
+        <div class="human-input-panel__field">
+          <div class="human-input-panel__label">反馈内容</div>
+          <el-input
+            v-model="confirmationFeedback"
+            type="textarea"
+            :rows="3"
+            resize="none"
+            placeholder="请输入反馈，将映射到 confirmationFeedback"
+          />
+        </div>
+        <el-button type="primary" :loading="isRunning" @click="submitConfirmation">
+          提交人工输入
+        </el-button>
+      </div>
+
+      <div v-else-if="!orderedSteps.length" class="empty-state">
         <div class="empty-state__title">还没有节点输出</div>
         <div class="empty-state__desc">
           点击上面的示例，或者自己输入一句需求，就能看到 graph 的执行过程。
@@ -385,6 +402,37 @@ onMounted(async () => {
 .timeline-panel__list {
   display: grid;
   gap: 16px;
+}
+
+.human-input-panel {
+  margin-top: 18px;
+  border: 1px solid rgba(168, 85, 247, 0.24);
+  border-radius: 16px;
+  padding: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.1), transparent 32%),
+    linear-gradient(180deg, #ffffff, #faf5ff);
+}
+
+.human-input-panel h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #0f172a;
+}
+
+.human-input-panel p {
+  margin: 8px 0 0;
+  color: #475569;
+}
+
+.human-input-panel__field {
+  margin: 14px 0;
+}
+
+.human-input-panel__label {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #334155;
 }
 
 .empty-state {

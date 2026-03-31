@@ -15,6 +15,7 @@ import io.a2a.server.tasks.TaskStore
 import io.a2a.server.tasks.TaskUpdater
 import io.a2a.spec.*
 import io.github.qifan777.server.graph.ToyGraphSpec
+import io.github.qifan777.server.graph.ToyGraphSpec.Node.INTERRUPT_NODE
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
@@ -25,7 +26,6 @@ class ToyAgentExecutor(
     private val taskStore: TaskStore,
 ) : AgentExecutor {
     private val saver = MemorySaver()
-
     override fun execute(
         context: RequestContext,
         eventQueue: EventQueue?
@@ -35,7 +35,7 @@ class ToyAgentExecutor(
         val compiledGraph = stateGraph.compile(
             CompileConfig.builder()
                 .saverConfig(SaverConfig.builder().register(saver).build())
-                .interruptBefore(ToyGraphSpec.Node.CONFIRM)
+                .interruptBefore(INTERRUPT_NODE)
                 .build()
         )
 
@@ -108,30 +108,9 @@ class ToyAgentExecutor(
             .doOnNext(::handleNodeOutput)
             .doOnComplete {
                 val stateSnapshot = compiledGraph.getState(runnableConfig)
-                val stateData = LinkedHashMap(stateSnapshot.state().data())
-                taskUpdater.addArtifact(
-                    listOf(
-                        DataPart(
-                            mapOf(
-                                ToyGraphSpec.StateKey.SCENE to stateData[ToyGraphSpec.StateKey.SCENE],
-                                ToyGraphSpec.StateKey.SCENE_LABEL to stateData[ToyGraphSpec.StateKey.SCENE_LABEL],
-                                ToyGraphSpec.ArtifactDataKey.NEED_CONFIRMATION to true,
-                            )
-                        )
-                    ),
-                    artifactNum.incrementAndGet().toString(),
-                    ToyGraphSpec.Node.CONFIRM,
-                    mapOf("outputType" to ToyGraphSpec.ArtifactOutputType.HUMAN_CONFIRMATION)
-                )
-                taskUpdater.requiresInput(
-                    taskUpdater.newAgentMessage(
-                        listOf(TextPart("已判断当前场景为${stateData[ToyGraphSpec.StateKey.SCENE_LABEL]}，请确认是否继续执行。")),
-                        mapOf(
-                            ToyGraphSpec.StateKey.SCENE to stateData[ToyGraphSpec.StateKey.SCENE],
-                            ToyGraphSpec.StateKey.SCENE_LABEL to stateData[ToyGraphSpec.StateKey.SCENE_LABEL],
-                        )
-                    )
-                )
+                if (stateSnapshot.next() == INTERRUPT_NODE) {
+                    taskUpdater.requiresInput()
+                }
             }
             .blockLast()
     }

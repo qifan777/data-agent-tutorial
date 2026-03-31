@@ -9,6 +9,8 @@ object ToyGraphSpec {
         const val TRAVEL_PLAN = "TRAVEL_PLAN_NODE"
         const val STUDY_PLAN = "STUDY_PLAN_NODE"
         const val WRAP_UP = "WRAP_UP_NODE"
+        const val INTERRUPT_NODE = CONFIRM
+
     }
 
     object StateKey {
@@ -26,15 +28,6 @@ object ToyGraphSpec {
         const val STUDY = "study"
     }
 
-    object ArtifactOutputType {
-        const val HUMAN_CONFIRMATION = "HUMAN_CONFIRMATION"
-        const val HUMAN_CONFIRMED = "HUMAN_CONFIRMED"
-    }
-
-    object ArtifactDataKey {
-        const val NEED_CONFIRMATION = "needConfirmation"
-        const val CONFIRMED = "confirmed"
-    }
 
     object MessageMetadataKey {
         const val CONFIRMATION_APPROVED = "confirmationApproved"
