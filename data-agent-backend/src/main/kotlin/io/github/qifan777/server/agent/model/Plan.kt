@@ -14,7 +14,7 @@ data class Plan(
 
     @get:JsonProperty("execution_plan")
     @get:JsonPropertyDescription("执行计划的步骤列表")
-    var executionPlan: List<ExecutionStep>
+    var executionPlan: List<PlanStep>
 ) {
 
     companion object {
@@ -23,7 +23,7 @@ data class Plan(
             return JsonUtil.fromJson(planStr, Plan::class.java) ?: throw RuntimeException("plan json反序列化失败")
         }
 
-        fun getCurrentStep(state: OverAllState): ExecutionStep {
+        fun getCurrentStep(state: OverAllState): PlanStep {
             val plan = getPlan(state)
             val step = state.value(DataAgentSpec.Graph.StateKey.Planning.CURRENT_STEP, 1)
             return plan.executionPlan[step - 1]
@@ -31,7 +31,7 @@ data class Plan(
     }
 }
 
-data class ExecutionStep(
+data class PlanStep(
     @get:JsonProperty("step")
     @get:JsonPropertyDescription("步骤顺序号")
     var step: Int = 0,

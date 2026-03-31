@@ -1,8 +1,8 @@
 package io.github.qifan777.server.agent.model
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.qifan777.server.agent.datasource.SchemaDataSourceProvider
-import io.github.qifan777.server.agent.datasource.SqliteSchemaDataSourceProvider
+import io.github.qifan777.server.shared.datasource.SchemaDataSourceProvider
+import io.github.qifan777.server.shared.datasource.SqliteSchemaDataSourceProvider
 import io.github.qifan777.server.dataset.scheme.domain.dto.DbForeignKeySchemaView
 import io.github.qifan777.server.dataset.scheme.domain.dto.DbTableSchemaView
 import io.github.qifan777.server.dataset.scheme.domain.toExpression

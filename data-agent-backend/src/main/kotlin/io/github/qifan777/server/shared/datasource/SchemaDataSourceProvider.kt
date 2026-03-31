@@ -1,4 +1,4 @@
-package io.github.qifan777.server.agent.datasource
+package io.github.qifan777.server.shared.datasource
 
 import javax.sql.DataSource
 

@@ -15,7 +15,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.github.qifan777.server.agent.DataAgentSpec
 import io.github.qifan777.server.agent.edges.FeasibilityAssessmentEdge
 import io.github.qifan777.server.agent.edges.HumanFeedbackEdge
+import io.github.qifan777.server.agent.edges.PlanExecutorEdge
 import io.github.qifan777.server.agent.nodes.*
+import io.github.qifan777.server.graph.nodes.SqlExecuteNode
 import org.babyfish.jimmer.jackson.v2.ImmutableModuleV2
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -38,7 +40,8 @@ open class GraphConfiguration {
         tableRelationNode: TableRelationNode,
         feasibilityAssessmentNode: FeasibilityAssessmentNode,
         plannerNode: PlannerNode,
-        serializer: StateSerializer, humanFeedbackNode: HumanFeedbackNode, planExecuteNode: PlanExecuteNode
+        serializer: StateSerializer, humanFeedbackNode: HumanFeedbackNode, planExecuteNode: PlanExecuteNode,
+        sqlGeneratorNode: SqlGeneratorNode, sqlExecuteNode: SqlExecuteNode
     ): StateGraph {
         val keyStrategyFactory = KeyStrategyFactory {
             val map = mutableMapOf<String, KeyStrategy>()
@@ -63,6 +66,8 @@ open class GraphConfiguration {
             map[DataAgentSpec.Graph.StateKey.HumanReview.NEXT_NODE] = ReplaceStrategy()
 
             map[DataAgentSpec.Graph.StateKey.Execution.FEASIBILITY_RESULT] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Execution.SQL_GENERATION_RESULT] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Execution.SQL_EXECUTION_RESULT] = ReplaceStrategy()
             map
         }
         return StateGraph(DataAgentSpec.GRAPH_NAME, keyStrategyFactory, serializer)
@@ -73,6 +78,8 @@ open class GraphConfiguration {
             .addNode(DataAgentSpec.Graph.Node.PLANNER, node_async(plannerNode))
             .addNode(DataAgentSpec.Graph.Node.HUMAN_FEEDBACK, node_async(humanFeedbackNode))
             .addNode(DataAgentSpec.Graph.Node.PLAN_EXECUTION, node_async(planExecuteNode))
+            .addNode(DataAgentSpec.Graph.Node.SQL_GENERATION, node_async(sqlGeneratorNode))
+            .addNode(DataAgentSpec.Graph.Node.SQL_EXECUTION, node_async(sqlExecuteNode))
             .addEdge(START, DataAgentSpec.Graph.Node.EVIDENCE_RECALL)
             .addEdge(DataAgentSpec.Graph.Node.EVIDENCE_RECALL, DataAgentSpec.Graph.Node.SCHEMA_RECALL)
             .addEdge(DataAgentSpec.Graph.Node.SCHEMA_RECALL, DataAgentSpec.Graph.Node.TABLE_RELATION)
@@ -93,6 +100,15 @@ open class GraphConfiguration {
                     DataAgentSpec.Graph.Node.PLAN_EXECUTION to DataAgentSpec.Graph.Node.PLAN_EXECUTION,
                     DataAgentSpec.Graph.Node.PLANNER to DataAgentSpec.Graph.Node.PLANNER
                 )
-            ).addEdge(DataAgentSpec.Graph.Node.PLAN_EXECUTION, END)
+            )
+            .addConditionalEdges(
+                DataAgentSpec.Graph.Node.PLAN_EXECUTION, edge_async(PlanExecutorEdge()),
+                mapOf(
+                    DataAgentSpec.Graph.Node.SQL_GENERATION to DataAgentSpec.Graph.Node.SQL_GENERATION,
+                    END to END,
+                )
+            )
+            .addEdge(DataAgentSpec.Graph.Node.SQL_GENERATION, DataAgentSpec.Graph.Node.SQL_EXECUTION)
+            .addEdge(DataAgentSpec.Graph.Node.SQL_EXECUTION, END)
     }
 }

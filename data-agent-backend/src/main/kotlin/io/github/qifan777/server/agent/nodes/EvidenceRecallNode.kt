@@ -4,7 +4,7 @@ import com.alibaba.cloud.ai.graph.OverAllState
 import com.alibaba.cloud.ai.graph.action.NodeAction
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.qifan777.server.agent.DataAgentSpec
-import io.github.qifan777.server.agent.model.EvidenceQueryRewriteDTO
+import io.github.qifan777.server.agent.model.EvidenceQueryRewriteResult
 import io.github.qifan777.server.agent.prompt.PromptManager
 import io.github.qifan777.server.agent.uuidOrNull
 import io.github.qifan777.server.dataset.knowledge.repository.QuestionKnowledgeRepository
@@ -31,9 +31,9 @@ class EvidenceRecallNode(
         val userInput = state.value(DataAgentSpec.Graph.StateKey.Input.USER_INPUT, "")
         val databaseId = state.value(DataAgentSpec.Graph.StateKey.Input.DATABASE_ID, "")
         val multiTurn = state.value(DataAgentSpec.Graph.StateKey.Input.MULTI_TURN_CONTEXT, "(无)")
-        val beanOutputConverter: BeanOutputConverter<EvidenceQueryRewriteDTO> =
+        val beanOutputConverter: BeanOutputConverter<EvidenceQueryRewriteResult> =
             BeanOutputConverter(
-                EvidenceQueryRewriteDTO::class.java
+                EvidenceQueryRewriteResult::class.java
             )
         val rewritePrompt = promptManager.evidenceQueryRewritePromptTemplate.render(
             mapOf(
@@ -56,7 +56,7 @@ class EvidenceRecallNode(
             .content() ?: throw IllegalArgumentException("Invalid rewrite response")
         logger.info { "Rewrite response: $rewriteResponse" }
         val convert = BeanOutputConverter(
-            EvidenceQueryRewriteDTO::class.java
+            EvidenceQueryRewriteResult::class.java
         ).convert(rewriteResponse) ?: throw IllegalArgumentException("Invalid rewrite response")
         val rewriteQuery = convert.standaloneQuery
         val terms = retrieveGlossaryKnowledge(rewriteQuery, databaseId)

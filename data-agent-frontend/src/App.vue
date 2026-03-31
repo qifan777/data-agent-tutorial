@@ -2,8 +2,12 @@
 import { Client, ClientFactory } from '@a2a-js/sdk/client'
 import EvidenceRecallNodeCard from '@/components/evidence-recall-node-card.vue'
 import FeasibilityAssessmentNodeCard from '@/components/feasibility-assessment-node-card.vue'
+import HumanFeedbackNodeCard from '@/components/human-feedback-node-card.vue'
+import PlanExecutionNodeCard from '@/components/plan-execution-node-card.vue'
 import PlannerNodeCard from '@/components/planner-node-card.vue'
 import SchemeRecallNodeCard from '@/components/scheme-recall-node-card.vue'
+import SqlExecutionNodeCard from '@/components/sql-execution-node-card.vue'
+import SqlGenerationNodeCard from '@/components/sql-generation-node-card.vue'
 import TableRelationNodeCard from '@/components/table-relation-node-card.vue'
 import { type AgentCard } from '@a2a-js/sdk'
 import { type Component, computed, markRaw, onMounted, reactive, ref, shallowRef } from 'vue'
@@ -29,6 +33,10 @@ const NODE_COMPONENTS: Record<string, Component> = {
   [DATA_AGENT_GRAPH_NODE.TABLE_RELATION]: markRaw(TableRelationNodeCard),
   [DATA_AGENT_GRAPH_NODE.FEASIBILITY_ASSESSMENT]: markRaw(FeasibilityAssessmentNodeCard),
   [DATA_AGENT_GRAPH_NODE.PLANNER]: markRaw(PlannerNodeCard),
+  [DATA_AGENT_GRAPH_NODE.HUMAN_FEEDBACK]: markRaw(HumanFeedbackNodeCard),
+  [DATA_AGENT_GRAPH_NODE.PLAN_EXECUTION]: markRaw(PlanExecutionNodeCard),
+  [DATA_AGENT_GRAPH_NODE.SQL_GENERATION]: markRaw(SqlGenerationNodeCard),
+  [DATA_AGENT_GRAPH_NODE.SQL_EXECUTION]: markRaw(SqlExecutionNodeCard),
 }
 
 const DEFAULT_EXAMPLES = [
