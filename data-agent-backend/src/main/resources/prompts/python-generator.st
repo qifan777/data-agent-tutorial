@@ -16,7 +16,7 @@
        traceback.print_exc(file=sys.stderr)
        sys.exit(1)
    ```
-5. **依赖限制**：所有使用的库必须是`continuumio/anaconda3`默认安装的库，如`pandas`, `numpy`, `json`, `sys`等。
+5. **依赖限制**：允许使用`continuumio/anaconda3`默认安装的库（如`pandas`, `numpy`, `json`, `sys`等）；不要使用需要额外安装的第三方库。
 6. **动态处理**：禁止硬编码列名/值，所有逻辑基于输入数据动态构建。
 7. **安全限制**：禁止以下操作：
    - 任何文件/网络操作（open/requests等）。
@@ -36,16 +36,15 @@ import sys
 import json
 import traceback
 import pandas as pd
-
 # 错误处理
 try:
     # 从stdin读取输入数据
     input_data = json.load(sys.stdin)
 
-    # 将输入数据转换为DataFrame以便于分析
+    # 转换为DataFrame
     df = pd.DataFrame(input_data)
 
-    # 自动类型推断：将字符串形式的数值转换为实际数值类型（解决后端统一返回字符串的问题）
+    # 自动类型推断：将字符串形式的数值转换为实际数值类型
     for col in df.columns:
         df[col] = pd.to_numeric(df[col], errors='ignore')
 
@@ -65,10 +64,6 @@ try:
                 "max": df[column].max()
             \}
 
-    # 示例逻辑：将原始数据分组并统计（可根据需求调整）
-    grouped = df.groupby(list(df.columns[:2])).size().reset_index(name="count")
-    result["details"] = grouped.to_dict(orient="records")
-
     # 输出结果为JSON对象
     print(json.dumps(result, ensure_ascii=False))
 
@@ -83,7 +78,7 @@ except Exception:
 # 注意事项
 
 1. **输入验证**：确保代码能够正确处理空输入或格式不正确的输入，并在异常时提供清晰的错误信息。**处理的数据必须来自`json.load(sys.stdin)`**。
-2. **类型转换**：由于后端SQL查询结果统一转换为字符串格式，**必须在DataFrame创建后进行类型推断**，使用`pd.to_numeric()`将数值字符串转换为实际数值类型，以便进行数学运算和统计分析。
+2. **类型转换**：由于后端SQL查询结果统一转换为字符串格式，建议在DataFrame创建后使用`pd.to_numeric()`进行类型推断，以便进行数学运算和统计分析。
 3. **性能优化**：尽量减少不必要的计算和内存占用，确保代码在性能约束内高效运行。
 4. **结果完整性**：输出的JSON对象应全面反映分析结果,且字段命名清晰易懂。
 
@@ -98,7 +93,6 @@ import sys
 import json
 import traceback
 import pandas as pd
-
 try:
     # 从stdin读取输入数据
     input_data = json.load(sys.stdin)
@@ -121,7 +115,6 @@ try:
             lead_count=("conversion", "size"),
             conversion_rate=("conversion", "mean")
         ).reset_index()
-
         result["channel_stats"] = grouped.to_dict(orient="records")
 
     # 输出结果为JSON对象

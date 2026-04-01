@@ -1,9 +1,6 @@
 package io.github.qifan777.server.integration.a2a
 
-import com.alibaba.cloud.ai.graph.CompileConfig
-import com.alibaba.cloud.ai.graph.NodeOutput
-import com.alibaba.cloud.ai.graph.RunnableConfig
-import com.alibaba.cloud.ai.graph.StateGraph
+import com.alibaba.cloud.ai.graph.*
 import com.alibaba.cloud.ai.graph.checkpoint.config.SaverConfig
 import com.alibaba.cloud.ai.graph.checkpoint.savers.MemorySaver
 import com.alibaba.cloud.ai.graph.streaming.OutputType
@@ -91,7 +88,9 @@ class GraphAgentExecutor(
             )
             compiledGraph.stream(null, resumedConfig)
                 .doOnNext(::handleNodeOutput)
-                .doOnComplete(taskUpdater::complete)
+                .doOnComplete {
+                    onComplete(compiledGraph, taskUpdater, runnableConfig)
+                }
                 .blockLast()
             return
         }
@@ -110,10 +109,7 @@ class GraphAgentExecutor(
         )
             .doOnNext(::handleNodeOutput)
             .doOnComplete {
-                val stateSnapshot = compiledGraph.getState(runnableConfig)
-                if (stateSnapshot.next() == INTERRUPT_NODE) {
-                    taskUpdater.requiresInput()
-                }
+                onComplete(compiledGraph, taskUpdater, runnableConfig)
             }
             .blockLast()
     }
@@ -134,6 +130,13 @@ class GraphAgentExecutor(
             id = request.taskId
         }
         return Task(id, contextId, TaskStatus(TaskState.SUBMITTED), null, listOf(request), null)
+    }
+
+    private fun onComplete(compiledGraph: CompiledGraph, taskUpdater: TaskUpdater, runnableConfig: RunnableConfig) {
+        val stateSnapshot = compiledGraph.getState(runnableConfig)
+        if (stateSnapshot.next() == INTERRUPT_NODE) {
+            taskUpdater.requiresInput()
+        }
     }
 
 }

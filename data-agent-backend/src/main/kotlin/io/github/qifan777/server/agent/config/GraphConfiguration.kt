@@ -41,7 +41,11 @@ open class GraphConfiguration {
         feasibilityAssessmentNode: FeasibilityAssessmentNode,
         plannerNode: PlannerNode,
         serializer: StateSerializer, humanFeedbackNode: HumanFeedbackNode, planExecuteNode: PlanExecuteNode,
-        sqlGeneratorNode: SqlGeneratorNode, sqlExecuteNode: SqlExecuteNode
+        sqlGeneratorNode: SqlGeneratorNode,
+        sqlExecuteNode: SqlExecuteNode,
+        pythonGeneratorNode: PythonGeneratorNode,
+        pythonExecuteNode: PythonExecuteNode,
+        pythonAnalyzeNode: PythonAnalyzeNode,
     ): StateGraph {
         val keyStrategyFactory = KeyStrategyFactory {
             val map = mutableMapOf<String, KeyStrategy>()
@@ -68,6 +72,9 @@ open class GraphConfiguration {
             map[DataAgentSpec.Graph.StateKey.Execution.FEASIBILITY_RESULT] = ReplaceStrategy()
             map[DataAgentSpec.Graph.StateKey.Execution.SQL_GENERATION_RESULT] = ReplaceStrategy()
             map[DataAgentSpec.Graph.StateKey.Execution.SQL_EXECUTION_RESULT] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Execution.PYTHON_GENERATION_RESULT] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Execution.PYTHON_EXECUTION_RESULT] = ReplaceStrategy()
+            map[DataAgentSpec.Graph.StateKey.Execution.REPORT_RESULT] = ReplaceStrategy()
             map
         }
         return StateGraph(DataAgentSpec.GRAPH_NAME, keyStrategyFactory, serializer)
@@ -80,6 +87,9 @@ open class GraphConfiguration {
             .addNode(DataAgentSpec.Graph.Node.PLAN_EXECUTION, node_async(planExecuteNode))
             .addNode(DataAgentSpec.Graph.Node.SQL_GENERATION, node_async(sqlGeneratorNode))
             .addNode(DataAgentSpec.Graph.Node.SQL_EXECUTION, node_async(sqlExecuteNode))
+            .addNode(DataAgentSpec.Graph.Node.PYTHON_GENERATION, node_async(pythonGeneratorNode))
+            .addNode(DataAgentSpec.Graph.Node.PYTHON_EXECUTION, node_async(pythonExecuteNode))
+            .addNode(DataAgentSpec.Graph.Node.PYTHON_ANALYSIS, node_async(pythonAnalyzeNode))
             .addEdge(START, DataAgentSpec.Graph.Node.EVIDENCE_RECALL)
             .addEdge(DataAgentSpec.Graph.Node.EVIDENCE_RECALL, DataAgentSpec.Graph.Node.SCHEMA_RECALL)
             .addEdge(DataAgentSpec.Graph.Node.SCHEMA_RECALL, DataAgentSpec.Graph.Node.TABLE_RELATION)
@@ -105,10 +115,14 @@ open class GraphConfiguration {
                 DataAgentSpec.Graph.Node.PLAN_EXECUTION, edge_async(PlanExecutorEdge()),
                 mapOf(
                     DataAgentSpec.Graph.Node.SQL_GENERATION to DataAgentSpec.Graph.Node.SQL_GENERATION,
+                    DataAgentSpec.Graph.Node.PYTHON_GENERATION to DataAgentSpec.Graph.Node.PYTHON_GENERATION,
                     END to END,
                 )
             )
             .addEdge(DataAgentSpec.Graph.Node.SQL_GENERATION, DataAgentSpec.Graph.Node.SQL_EXECUTION)
-            .addEdge(DataAgentSpec.Graph.Node.SQL_EXECUTION, END)
+            .addEdge(DataAgentSpec.Graph.Node.SQL_EXECUTION, DataAgentSpec.Graph.Node.PLAN_EXECUTION)
+            .addEdge(DataAgentSpec.Graph.Node.PYTHON_GENERATION, DataAgentSpec.Graph.Node.PYTHON_EXECUTION)
+            .addEdge(DataAgentSpec.Graph.Node.PYTHON_EXECUTION, DataAgentSpec.Graph.Node.PYTHON_ANALYSIS)
+            .addEdge(DataAgentSpec.Graph.Node.PYTHON_ANALYSIS, END)
     }
 }

@@ -6,7 +6,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.qifan777.server.agent.DataAgentSpec
 import io.github.qifan777.server.agent.model.Schema
 import io.github.qifan777.server.agent.prompt.PromptManager
-import io.github.qifan777.server.shared.json.JsonUtil
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.openai.OpenAiChatOptions
@@ -19,10 +18,7 @@ class FeasibilityAssessmentNode(private val chatModel: ChatModel, private val pr
     NodeAction {
     override fun apply(state: OverAllState): Map<String, Any> {
         val rewriteQuery = state.value(DataAgentSpec.Graph.StateKey.Recall.REWRITE_QUERY, "")
-        val schema = JsonUtil.fromJson(
-            state.value(DataAgentSpec.Graph.StateKey.Recall.TABLE_RELATION, String::class.java).orElseThrow {
-                RuntimeException("Unable to read Schema")
-            }, Schema::class.java)!!
+        val schema = Schema.fromState(state)
         val evidence = state.value(DataAgentSpec.Graph.StateKey.Recall.EVIDENCE, "")
         val multiTurn = state.value(DataAgentSpec.Graph.StateKey.Input.MULTI_TURN_CONTEXT, "(无)")
         val prompt = promptManager.feasibilityAssessmentPromptTemplate.render(

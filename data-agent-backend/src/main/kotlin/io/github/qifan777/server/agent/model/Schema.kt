@@ -1,11 +1,14 @@
 package io.github.qifan777.server.agent.model
 
+import com.alibaba.cloud.ai.graph.OverAllState
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.qifan777.server.shared.datasource.SchemaDataSourceProvider
-import io.github.qifan777.server.shared.datasource.SqliteSchemaDataSourceProvider
+import io.github.qifan777.server.agent.DataAgentSpec
 import io.github.qifan777.server.dataset.scheme.domain.dto.DbForeignKeySchemaView
 import io.github.qifan777.server.dataset.scheme.domain.dto.DbTableSchemaView
 import io.github.qifan777.server.dataset.scheme.domain.toExpression
+import io.github.qifan777.server.shared.datasource.SchemaDataSourceProvider
+import io.github.qifan777.server.shared.datasource.SqliteSchemaDataSourceProvider
+import io.github.qifan777.server.shared.json.JsonUtil
 import java.sql.Connection
 import java.sql.SQLException
 
@@ -17,6 +20,13 @@ data class Schema(
     val dbForeignKeys: List<DbForeignKeySchemaView>,
     val enableExampleSampling: Boolean = false
 ) {
+    companion object {
+        fun fromState(state: OverAllState): Schema {
+            val json = state.value(DataAgentSpec.Graph.StateKey.Recall.TABLE_RELATION, "")
+            return JsonUtil.fromJson<Schema>(json)!!
+        }
+    }
+
     fun buildSchemePrompt(
         dataSourceProvider: SchemaDataSourceProvider = SqliteSchemaDataSourceProvider,
     ): String {
@@ -91,5 +101,8 @@ data class Schema(
             // 某些列类型可能不支持 DISTINCT，这里忽略
         }
         return values
+    }
+    fun toJson(): String {
+        return JsonUtil.toJson(this)!!
     }
 }
