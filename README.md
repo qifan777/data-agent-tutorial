@@ -1,7 +1,7 @@
 # 🚀 Data-Agent: 从 0 到 1 构建企业级 Text2SQL 智能体
 
-> 告别“玩具级” Demo。这个教程专为想把大模型应用从 POC 落地到生产环境的开发者打造。  
-> 你将自顶向下构建一个具备 **StateGraph 图编排**、**双重 RAG 检索**、**自我纠错**、**HITL 人机协同** 能力的工业级 Text2SQL 数据智能体。
+> 本项目是一个**基于开源项目的学习型教程**：在参考 `spring-ai-alibaba/DataAgent` 的基础上，结合个人理解进行拆解、复现与讲解。  
+> 目标是帮助开发者从 0 到 1 系统掌握 **StateGraph 图编排**、**双重 RAG 检索**、**自我纠错**、**HITL 人机协同** 等 Text2SQL Agent 关键能力。
 
 <p align="left">
   <a href="https://github.com/qifan777/data-agent-tutorial">项目仓库</a> ·
