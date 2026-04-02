@@ -23,20 +23,21 @@
 
 ## 🖼️ 项目介绍图
 
-[点击查看原图](./video-cover.svg)
+[点击查看原图](./assets/readme/video-cover.svg)
 
-<img src="./video-cover.svg" alt="Data-Agent 项目介绍图" width="100%" />
+<img src="./assets/readme/video-cover.svg" alt="Data-Agent 项目介绍图" width="100%" />
 
 ---
 
 ## ✨ 核心亮点：你将学到什么？
 
-传统 Text2SQL 往往面临“表结构喂不下”“模型老写错”“缺乏业务常识”三大难题。本项目通过现代 Agent 架构逐一击破：
+这个教程不是“只看概念”的介绍，而是围绕一个可运行项目，带你把 Text2SQL Agent 的关键能力拆开学透：
 
-- 🧠 **状态图编排（StateGraph）**：将“问题理解 → 知识召回 → 可行性评估 → SQL 生成 → 校验修复 → 报告输出”拆解为可观测、可控制的图节点。
-- 📚 **双重 RAG 知识底座**：融合结构化元数据（表/列/外键关联）与非结构化业务知识（Bird SQL、QA 问答），显著降低幻觉。
-- 🤝 **HITL + A2A 协议**：原生集成 A2A（Agent-to-Application）与 SSE 流式输出，支持关键节点人工确认与接管。
-- 🛡️ **自动纠错闭环**：支持 SQL 执行与 Python Docker 沙盒执行，出现语法/数据问题可自动回溯修复。
+- 🧩 **从流程到代码的完整映射**：用 StateGraph 把问题理解、知识召回、规划、执行、纠错、报告串成清晰链路，知道每一步该放什么能力。
+- 📚 **结构化 + 非结构化的双通道检索**：同时利用关系图谱信息与业务知识库，理解 Text2SQL 在真实业务里如何减少歧义和幻觉。
+- 🛠️ **可落地的执行与纠错机制**：掌握 SQL 生成与执行、错误回溯修复、Python Docker 沙盒分析的协作方式，而不是停留在“生成 SQL”这一步。
+- 🤝 **面向生产的交互设计**：通过 HITL 人工确认、A2A 协议、SSE 流式反馈，学习高风险场景下可控、可观测的人机协同模式。
+- 📖 **可复现的学习路径**：基于开源项目进行拆解与复现，提供从骨架搭建到核心编排的章节化路线，适合边读边跑、逐步进阶。
 
 ## 🛠️ 现代化技术栈
 
@@ -49,9 +50,9 @@
 
 ## 🧭 宏观系统架构图 (System Architecture)
 
-[点击查看原图](./A2A-client-server.png)
+[点击查看原图](./assets/readme/A2A-client-server.png)
 
-<img src="./A2A-client-server.png" alt="Data-Agent 宏观系统架构图" width="100%" />
+<img src="./assets/readme/A2A-client-server.png" alt="Data-Agent 宏观系统架构图" width="100%" />
 
 ---
 
@@ -75,11 +76,9 @@
 
 ## 🖼️ 效果预览
 
-### 最终效果（长截图）
+[点击查看原图（完整长图）](./assets/readme/all.png)
 
-[点击查看原图（完整长图）](./all.png)
-
-<img src="./report.png" alt="Data-Agent 系统最终效果图" width="100%" />
+<img src="./assets/readme/report.png" alt="Data-Agent 系统最终效果图" width="100%" />
 
 ---
 
@@ -87,7 +86,7 @@
 
 ### 1. 环境准备
 
-- 基础环境：`Java 17+`、`Node.js 20+`、`pnpm`
+- 基础环境：`Java 21+`、`Node.js 20+`、`pnpm`
 - 数据库：`PostgreSQL`（默认 `localhost:5432/data_agent_tutorial`）
 - 必装扩展：`pgvector`
 
@@ -96,6 +95,14 @@ CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
 ### 2. 启动后端
+
+首次初始化数据库（在项目根目录执行）：
+
+```bash
+psql -U postgres data_agent_tutorial -f data-agent-backend/src/main/resources/database.sql
+```
+
+然后启动后端：
 
 ```bash
 cd data-agent-backend
@@ -122,7 +129,7 @@ pnpm dev
 
 ## 📖 教程导航（自顶向下进阶）
 
-> 建议切换到对应章节 Git 分支对照源码阅读，效果最佳。
+> 本教程按章节组织，**强烈建议切换到对应章节的 Git 分支**对照阅读源码，效果翻倍！
 
 - 🏗️ **[00 项目骨架搭建](https://www.jarcheng.top/project/data-agent/00-project-scaffold/)**  
   后端 Kotlin + Jimmer 初始化，前端 Vue3 接入 API 自动生成。
