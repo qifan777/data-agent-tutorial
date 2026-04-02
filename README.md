@@ -141,3 +141,16 @@ pnpm dev
   完成结构化表关联入库与 PGVector 向量化。
 - 🔥 **[04 SQL Agent 核心编排](https://www.jarcheng.top/project/data-agent/04-sql-agent-orchestration/)**（系列高潮）  
   逐个击破：知识召回、关系图谱、任务拆解、SQL 自纠错、Python 高阶计算、商业报告生成。
+
+
+--- 
+
+## 联系方式
+
+付费远程运行/安装/定制开发联系微信：ljc666max
+
+其他关于程序运行安装报错请加QQ群：
+
+- 416765656（满）
+- 632067985
+
