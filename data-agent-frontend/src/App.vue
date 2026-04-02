@@ -8,6 +8,7 @@ import PlannerNodeCard from '@/components/planner-node-card.vue'
 import PythonAnalysisNodeCard from '@/components/python-analysis-node-card.vue'
 import PythonExecutionNodeCard from '@/components/python-execution-node-card.vue'
 import PythonGenerationNodeCard from '@/components/python-generation-node-card.vue'
+import ReportGenerationNodeCard from '@/components/report-generation-node-card.vue'
 import SchemeRecallNodeCard from '@/components/scheme-recall-node-card.vue'
 import SqlExecutionNodeCard from '@/components/sql-execution-node-card.vue'
 import SqlGenerationNodeCard from '@/components/sql-generation-node-card.vue'
@@ -43,6 +44,7 @@ const NODE_COMPONENTS: Record<string, Component> = {
   [DATA_AGENT_GRAPH_NODE.PYTHON_GENERATION]: markRaw(PythonGenerationNodeCard),
   [DATA_AGENT_GRAPH_NODE.PYTHON_EXECUTION]: markRaw(PythonExecutionNodeCard),
   [DATA_AGENT_GRAPH_NODE.PYTHON_ANALYSIS]: markRaw(PythonAnalysisNodeCard),
+  [DATA_AGENT_GRAPH_NODE.REPORT_GENERATION]: markRaw(ReportGenerationNodeCard),
 }
 
 const DEFAULT_EXAMPLES = [
