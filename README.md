@@ -99,7 +99,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 首次初始化数据库（在项目根目录执行）：
 
 ```bash
-psql -U postgres data_agent_tutorial -f data-agent-backend/src/main/resources/database.sql
+psql -h localhost -p 5432 -U postgres -d data_agent_tutorial -f data-agent-backend/src/main/resources/database.sql
 ```
 
 然后启动后端：
