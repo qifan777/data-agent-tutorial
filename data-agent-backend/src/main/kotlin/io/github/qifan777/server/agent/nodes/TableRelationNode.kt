@@ -32,7 +32,7 @@ class TableRelationNode(
     private val dbTableRepository: DbTableRepository,
     private val promptManager: PromptManager
 ) : NodeAction {
-    private val baseHighSimilarityThreshold = 0.6
+    private val baseHighSimilarityThreshold = 0.4
     private val targetTableCount = 4
 
     override fun apply(state: OverAllState): Map<String, Any> {
