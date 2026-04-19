@@ -46,6 +46,13 @@ const relationPayload = computed<RelationPayload>(() => {
   if (value && typeof value === 'object') {
     return value as RelationPayload
   }
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as RelationPayload
+    } catch {
+      return {}
+    }
+  }
   return typedData.value as RelationPayload
 })
 
