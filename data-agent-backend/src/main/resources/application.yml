@@ -12,7 +12,10 @@ spring:
     driver-class-name: org.postgresql.Driver
   ai:
     openai:
-      base-url: openai协议baseurl(不带v1)，例如 https://dashscope.aliyuncs.com/compatible-mode
+      # 起凡 AI 中转站：http://ai.jarcheng.top/，注册赠送25刀，支持 OpenAI 协议
+      # base-url 填 OpenAI 协议地址，不带 /v1，例如 http://ai.jarcheng.top
+      base-url:
+      # api-key 填中转站控制台创建的密钥
       api-key:
       chat:
         options:

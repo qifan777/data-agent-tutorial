@@ -100,7 +100,16 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
-### 2. 启动后端
+### 2. 配置模型 API Key
+
+后端使用 Spring AI 的 OpenAI 兼容配置。没有可用的 API Key 时，可以前往 [起凡 AI 中转站](http://ai.jarcheng.top/) 注册，赠送25刀额度，支持 OpenAI 协议。
+
+在 `data-agent-backend/src/main/resources/application.yml` 中配置：
+
+- `spring.ai.openai.base-url`：填写 `http://ai.jarcheng.top`（不带 `/v1`）
+- `spring.ai.openai.api-key`：填写中转站控制台创建的 API Key
+
+### 3. 启动后端
 
 首次初始化数据库（在项目根目录执行）：
 
@@ -117,7 +126,7 @@ cd data-agent-backend
 
 出现 `Tomcat started on port(s): 9933` 即启动成功。
 
-### 3. 启动前端
+### 4. 启动前端
 
 ```bash
 cd data-agent-frontend
@@ -127,7 +136,7 @@ pnpm dev
 
 默认地址：`http://localhost:3500`（自动代理 `/api` 到后端）。
 
-### 4. 验证 A2A 链路
+### 5. 验证 A2A 链路
 
 打开浏览器输入自然语言问题，若看到前端卡片出现流式节点打字机效果，即最小 Agent 闭环已跑通。
 
